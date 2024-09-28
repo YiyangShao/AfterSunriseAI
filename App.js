@@ -1,12 +1,21 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import Sidebar from './src/Sidebar';
+import Header from './src/Header';
+import TaskCategories from './src/TaskCategories';
+import DayPlanner from './src/DayPlanner';
+import Footer from './src/Footer';
 
 export default function App() {
   return (
     <View style={styles.container}>
       <Sidebar />
-      {/* Main content goes here */}
+      <DayPlanner />
+      <View style={styles.mainContent}>
+        <Header />
+        <TaskCategories />
+        <Footer />
+      </View>
     </View>
   );
 }
@@ -14,6 +23,11 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'row',  // Ensures sidebar and content are side by side
+    flexDirection: 'row',
+  },
+  mainContent: {
+    flex: 3,
+    backgroundColor: '#fff',
+    justifyContent: 'space-between',  // This ensures footer stays at the bottom
   },
 });

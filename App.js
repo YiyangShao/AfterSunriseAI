@@ -28,6 +28,6 @@ const styles = StyleSheet.create({
   mainContent: {
     flex: 3,
     backgroundColor: '#fff',
-    justifyContent: 'space-between',  // This ensures footer stays at the bottom
+    justifyContent: 'space-between',
   },
 });

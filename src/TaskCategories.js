@@ -46,7 +46,7 @@ const TaskCategories = () => {
 
   const addWorkTask = () => {
     if (newWorkTask.trim()) {
-      const updatedWorkTasks = [...workTasks, newWorkTask];
+      const updatedWorkTasks = [...workTasks, { text: newWorkTask, completed: false }];
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); // Animate task addition
       setWorkTasks(updatedWorkTasks);
       saveTasks(WORK_TASKS_KEY, updatedWorkTasks);  // Save to storage
@@ -56,7 +56,7 @@ const TaskCategories = () => {
 
   const addPersonalTask = () => {
     if (newPersonalTask.trim()) {
-      const updatedPersonalTasks = [...personalTasks, newPersonalTask];
+      const updatedPersonalTasks = [...personalTasks, { text: newPersonalTask, completed: false }];
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); // Animate task addition
       setPersonalTasks(updatedPersonalTasks);
       saveTasks(PERSONAL_TASKS_KEY, updatedPersonalTasks);  // Save to storage
@@ -78,6 +78,22 @@ const TaskCategories = () => {
     saveTasks(PERSONAL_TASKS_KEY, updatedPersonalTasks);  // Update storage
   };
 
+  const toggleWorkTaskCompletion = (index) => {
+    const updatedWorkTasks = workTasks.map((task, i) => 
+      i === index ? { ...task, completed: !task.completed } : task
+    );
+    setWorkTasks(updatedWorkTasks);
+    saveTasks(WORK_TASKS_KEY, updatedWorkTasks);
+  };
+
+  const togglePersonalTaskCompletion = (index) => {
+    const updatedPersonalTasks = personalTasks.map((task, i) => 
+      i === index ? { ...task, completed: !task.completed } : task
+    );
+    setPersonalTasks(updatedPersonalTasks);
+    saveTasks(PERSONAL_TASKS_KEY, updatedPersonalTasks);
+  };
+
   return (
     <View style={styles.container}>
       {/* Work Section */}
@@ -85,7 +101,12 @@ const TaskCategories = () => {
         <Text style={styles.categoryTitle}>Work</Text>
         {workTasks.map((task, index) => (
           <View key={index} style={styles.taskContainer}>
-            <Text style={styles.taskText}>- {task}</Text>
+            <TouchableOpacity onPress={() => toggleWorkTaskCompletion(index)} style={styles.checkbox}>
+              {task.completed && <Text style={styles.checkboxText}>✔</Text>}
+            </TouchableOpacity>
+            <Text style={[styles.taskText, task.completed && styles.completedTaskText]}>
+              {task.text}
+            </Text>
             <TouchableOpacity onPress={() => deleteWorkTask(index)}>
               <Text style={styles.deleteButton}>❌</Text>
             </TouchableOpacity>
@@ -107,7 +128,12 @@ const TaskCategories = () => {
         <Text style={styles.categoryTitle}>Personal</Text>
         {personalTasks.map((task, index) => (
           <View key={index} style={styles.taskContainer}>
-            <Text style={styles.taskText}>- {task}</Text>
+            <TouchableOpacity onPress={() => togglePersonalTaskCompletion(index)} style={styles.checkbox}>
+              {task.completed && <Text style={styles.checkboxText}>✔</Text>}
+            </TouchableOpacity>
+            <Text style={[styles.taskText, task.completed && styles.completedTaskText]}>
+              {task.text}
+            </Text>
             <TouchableOpacity onPress={() => deletePersonalTask(index)}>
               <Text style={styles.deleteButton}>❌</Text>
             </TouchableOpacity>
@@ -146,9 +172,27 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 10,
   },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderWidth: 2,
+    borderColor: '#555',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  checkboxText: {
+    fontSize: 16,
+    color: '#007bff',
+  },
   taskText: {
     fontSize: 16,
     color: '#555',
+    flex: 1,
+  },
+  completedTaskText: {
+    textDecorationLine: 'line-through',
+    color: '#aaa',
   },
   deleteButton: {
     fontSize: 18,

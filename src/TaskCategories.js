@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, LayoutAnimation, UIManager, Platform } from 'react-native';
+import { View, StyleSheet, LayoutAnimation, UIManager, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import TaskList from './TaskList';
 
 // Enable LayoutAnimation for Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -44,6 +45,7 @@ const TaskCategories = () => {
     }
   };
 
+  // Add new work task
   const addWorkTask = () => {
     if (newWorkTask.trim()) {
       const updatedWorkTasks = [...workTasks, { text: newWorkTask, completed: false }];
@@ -54,6 +56,7 @@ const TaskCategories = () => {
     }
   };
 
+  // Add new personal task
   const addPersonalTask = () => {
     if (newPersonalTask.trim()) {
       const updatedPersonalTasks = [...personalTasks, { text: newPersonalTask, completed: false }];
@@ -64,20 +67,7 @@ const TaskCategories = () => {
     }
   };
 
-  const deleteWorkTask = (index) => {
-    const updatedWorkTasks = workTasks.filter((_, i) => i !== index);
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); // Animate task deletion
-    setWorkTasks(updatedWorkTasks);
-    saveTasks(WORK_TASKS_KEY, updatedWorkTasks);  // Update storage
-  };
-
-  const deletePersonalTask = (index) => {
-    const updatedPersonalTasks = personalTasks.filter((_, i) => i !== index);
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); // Animate task deletion
-    setPersonalTasks(updatedPersonalTasks);
-    saveTasks(PERSONAL_TASKS_KEY, updatedPersonalTasks);  // Update storage
-  };
-
+  // Toggle work task completion
   const toggleWorkTaskCompletion = (index) => {
     const updatedWorkTasks = workTasks.map((task, i) => 
       i === index ? { ...task, completed: !task.completed } : task
@@ -86,6 +76,7 @@ const TaskCategories = () => {
     saveTasks(WORK_TASKS_KEY, updatedWorkTasks);
   };
 
+  // Toggle personal task completion
   const togglePersonalTaskCompletion = (index) => {
     const updatedPersonalTasks = personalTasks.map((task, i) => 
       i === index ? { ...task, completed: !task.completed } : task
@@ -94,61 +85,42 @@ const TaskCategories = () => {
     saveTasks(PERSONAL_TASKS_KEY, updatedPersonalTasks);
   };
 
+  // Delete work task
+  const deleteWorkTask = (index) => {
+    const updatedWorkTasks = workTasks.filter((_, i) => i !== index);
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); // Animate task deletion
+    setWorkTasks(updatedWorkTasks);
+    saveTasks(WORK_TASKS_KEY, updatedWorkTasks);  // Update storage
+  };
+
+  // Delete personal task
+  const deletePersonalTask = (index) => {
+    const updatedPersonalTasks = personalTasks.filter((_, i) => i !== index);
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); // Animate task deletion
+    setPersonalTasks(updatedPersonalTasks);
+    saveTasks(PERSONAL_TASKS_KEY, updatedPersonalTasks);  // Update storage
+  };
+
   return (
     <View style={styles.container}>
-      {/* Work Section */}
-      <View style={styles.category}>
-        <Text style={styles.categoryTitle}>Work</Text>
-        {workTasks.map((task, index) => (
-          <View key={index} style={styles.taskContainer}>
-            <TouchableOpacity onPress={() => toggleWorkTaskCompletion(index)} style={styles.checkbox}>
-              {task.completed && <Text style={styles.checkboxText}>✔</Text>}
-            </TouchableOpacity>
-            <Text style={[styles.taskText, task.completed && styles.completedTaskText]}>
-              {task.text}
-            </Text>
-            <TouchableOpacity onPress={() => deleteWorkTask(index)}>
-              <Text style={styles.deleteButton}>❌</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
-        <TextInput
-          style={styles.input}
-          placeholder="New work task"
-          value={newWorkTask}
-          onChangeText={setNewWorkTask}
-        />
-        <TouchableOpacity style={styles.addButton} onPress={addWorkTask}>
-          <Text style={styles.addButtonText}>+ Add new work to-do</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Personal Section */}
-      <View style={styles.category}>
-        <Text style={styles.categoryTitle}>Personal</Text>
-        {personalTasks.map((task, index) => (
-          <View key={index} style={styles.taskContainer}>
-            <TouchableOpacity onPress={() => togglePersonalTaskCompletion(index)} style={styles.checkbox}>
-              {task.completed && <Text style={styles.checkboxText}>✔</Text>}
-            </TouchableOpacity>
-            <Text style={[styles.taskText, task.completed && styles.completedTaskText]}>
-              {task.text}
-            </Text>
-            <TouchableOpacity onPress={() => deletePersonalTask(index)}>
-              <Text style={styles.deleteButton}>❌</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
-        <TextInput
-          style={styles.input}
-          placeholder="New personal task"
-          value={newPersonalTask}
-          onChangeText={setNewPersonalTask}
-        />
-        <TouchableOpacity style={styles.addButton} onPress={addPersonalTask}>
-          <Text style={styles.addButtonText}>+ Add new personal to-do</Text>
-        </TouchableOpacity>
-      </View>
+      <TaskList
+        tasks={workTasks}
+        category="Work"
+        newTaskText={newWorkTask}
+        onAddTask={addWorkTask}
+        onToggleCompletion={toggleWorkTaskCompletion}
+        onDelete={deleteWorkTask}
+        onInputChange={setNewWorkTask}
+      />
+      <TaskList
+        tasks={personalTasks}
+        category="Personal"
+        newTaskText={newPersonalTask}
+        onAddTask={addPersonalTask}
+        onToggleCompletion={togglePersonalTaskCompletion}
+        onDelete={deletePersonalTask}
+        onInputChange={setNewPersonalTask}
+      />
     </View>
   );
 };
@@ -156,64 +128,6 @@ const TaskCategories = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-  },
-  category: {
-    marginBottom: 30,
-  },
-  categoryTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 10,
-  },
-  taskContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderWidth: 2,
-    borderColor: '#555',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-  },
-  checkboxText: {
-    fontSize: 16,
-    color: '#007bff',
-  },
-  taskText: {
-    fontSize: 16,
-    color: '#555',
-    flex: 1,
-  },
-  completedTaskText: {
-    textDecorationLine: 'line-through',
-    color: '#aaa',
-  },
-  deleteButton: {
-    fontSize: 18,
-    color: '#ff4d4d',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
-  },
-  addButton: {
-    backgroundColor: '#f0f0f0',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 5,
-  },
-  addButtonText: {
-    fontSize: 16,
-    color: '#007bff',
   },
 });
 

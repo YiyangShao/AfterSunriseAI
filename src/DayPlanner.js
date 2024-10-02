@@ -9,18 +9,15 @@ const DayPlanner = ({ tasks }) => {
 
   // Placeholder time block data
   const placeholderTimeBlocks = [
-    { time_slot: "09:00", task_title: "Placeholder Task 1" },
-    { time_slot: "10:00", task_title: "Placeholder Task 2" },
-    { time_slot: "11:00", task_title: "Placeholder Task 3" },
+    { time_slot: "09:00", task_title: "Placeholder Task 1", duration: 1 },
+    { time_slot: "10:30", task_title: "Placeholder Task 2", duration: 1.5 },
+    { time_slot: "14:00", task_title: "Placeholder Task 3", duration: 2 },
   ];
 
-  // Function to send tasks to the backend and fetch time blocks
+  // Function to fetch time blocks from the backend
   const fetchTimeBlocks = async () => {
     try {
-      // Convert tasks to JSON
       const taskData = JSON.stringify({ tasks });
-
-      // Send tasks to the backend
       const response = await fetch('https://your-backend-url/api/assign-time-blocks', {
         method: 'POST',
         headers: {
@@ -28,14 +25,8 @@ const DayPlanner = ({ tasks }) => {
         },
         body: taskData,
       });
-
-      // If the response is not ok, throw an error
       if (!response.ok) throw new Error("Failed to fetch data");
-
-      // Fetch the assigned time blocks from the backend
       const data = await response.json();
-
-      // Set time blocks
       setTimeBlocks(data.time_blocks);
       setLoading(false);
     } catch (error) {
@@ -47,7 +38,6 @@ const DayPlanner = ({ tasks }) => {
   };
 
   useEffect(() => {
-    // Fetch time blocks when the component mounts
     fetchTimeBlocks();
   }, [tasks]); // Refetch time blocks when tasks change
 
@@ -55,42 +45,97 @@ const DayPlanner = ({ tasks }) => {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
+  // Define the available time slots (whole day)
+  const timeSlots = Array.from({ length: 24 }, (_, i) => {
+    const hour = i.toString().padStart(2, '0');
+    return `${hour}:00`;
+  });
+
+  // Convert time (e.g., "09:00") to number of minutes since midnight
+  const timeToMinutes = (time) => {
+    const [hour, minute] = time.split(':').map(Number);
+    return hour * 60 + minute;
+  };
+
+  // Render the task blocks based on time slots and durations
+  const renderTaskBlocks = () => {
+    return timeBlocks.map((block, index) => {
+      const startMinutes = timeToMinutes(block.time_slot);
+      const height = block.duration * 60; // 1 hour = 60px height
+
+      return (
+        <View
+          key={index}
+          style={[
+            styles.taskBlock,
+            {
+              top: startMinutes, // Position the block based on the start time
+              height: height, // Set height based on task duration
+            },
+          ]}
+        >
+          <Text style={styles.taskTitle}>{block.task_title}</Text>
+        </View>
+      );
+    });
+  };
+
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       {error && (
         <Text style={styles.errorMessage}>
           Failed to fetch time blocks from backend. Displaying placeholder data.
         </Text>
       )}
-      {timeBlocks.map((block, index) => (
-        <View key={index} style={styles.timeSlot}>
-          <Text style={styles.timeText}>{block.time_slot}</Text>
-          <Text style={styles.taskText}>{block.task_title}</Text>
-        </View>
-      ))}
-    </ScrollView>
+      <ScrollView contentContainerStyle={styles.calendar} showsVerticalScrollIndicator={true}>
+        {/* Render the time slots */}
+        {timeSlots.map((time, index) => (
+          <View key={index} style={styles.timeSlot}>
+            <Text style={styles.timeText}>{time}</Text>
+          </View>
+        ))}
+        {/* Render the task blocks */}
+        {renderTaskBlocks()}
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: 10,
+    position: 'relative',
+    height: '100%', // Make sure the height of the container fills the screen
+  },
+  calendar: {
+    position: 'relative',
+    height: 24 * 60, // 24 hours, 60px for each hour
   },
   timeSlot: {
-    marginBottom: 20,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
+    height: 60, // Each hour is 60px tall
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    justifyContent: 'center',
+    position: 'relative',
   },
   timeText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  taskText: {
+    position: 'absolute',
+    left: 0, // Position the time labels on the left of the screen
     fontSize: 16,
-    color: '#333',
+    color: '#777',
+    width: 50, // Ensure there's enough room for the time labels
+  },
+  taskBlock: {
+    position: 'absolute',
+    left: 60, // Position the task block to the right of the time labels
+    width: '80%',
+    backgroundColor: '#ffbf47',
+    borderRadius: 5,
+    padding: 10,
+  },
+  taskTitle: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   errorMessage: {
     color: '#ff4d4d',

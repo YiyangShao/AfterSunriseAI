@@ -23,11 +23,15 @@
     "time_blocks": [
       {
         "time_slot": "09:00",
-        "task_id": "1"
+        "task_id": "1",
+        "task_title": "Prepare report",
+        "duration": 2
       },
       {
         "time_slot": "14:00",
-        "task_id": "2"
+        "task_id": "2",
+        "task_title": "Buy groceries",
+        "duration": 1
       }
     ]
   }

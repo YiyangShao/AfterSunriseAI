@@ -24,18 +24,16 @@ const DayPlanner = ({ tasks, showPlan }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  // Function to fetch time blocks from the backend (or use fake data if backend fails)
   const fetchTimeBlocks = async () => {
     try {
       setLoading(true); // Show loading indicator
       const taskData = JSON.stringify({
         user: {
           user_id: "user_id_123",
-          preference_type: "Quick Wins"
+          preference_type: "⚡ Quick Wins"
         },
         tasks_json_structure: { tasks }
       });
-      
 
       const response = await fetch('https://your-backend-url/api/assign-time-blocks', {
         method: 'POST',
@@ -57,12 +55,11 @@ const DayPlanner = ({ tasks, showPlan }) => {
     }
   };
 
-  // Fetch the time blocks only when the showPlan prop becomes true
   useEffect(() => {
     if (showPlan) {
       fetchTimeBlocks(); // Fetch time blocks when "Plan My Day" is clicked
     }
-  }, [showPlan]);
+  }, [showPlan, tasks]); // Fetch time blocks whenever tasks change
 
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
@@ -85,7 +82,7 @@ const DayPlanner = ({ tasks, showPlan }) => {
           style={[
             styles.taskBlock,
             {
-              top: startMinutes + 240, // Position the block based on the start time
+              top: startMinutes, // Position the block based on the start time
               height: height, // Set height based on task duration (in minutes)
             },
           ]}

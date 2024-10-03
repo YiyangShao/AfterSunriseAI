@@ -7,9 +7,32 @@ import DayPlanner from './src/DayPlanner';
 import Footer from './src/Footer';
 
 export default function App() {
-  const [workTasks, setWorkTasks] = useState([]);
-  const [personalTasks, setPersonalTasks] = useState([]);
-  const [showPlan, setShowPlan] = useState(false); // New state to control when to show the plan
+  const [tasks, setTasks] = useState([
+    {
+      id: "1",
+      category: "work",
+      title: "Prepare report",
+      description: "Complete the monthly sales report.",
+      status: "pending",
+      priority: { level: "high" },
+      created_at: "2024-10-02T09:00:00Z",
+      due_date: "2024-10-10T17:00:00Z",
+      tags: ["report", "finance"]
+    },
+    {
+      id: "2",
+      category: "personal",
+      title: "Buy groceries",
+      description: "Buy milk, eggs, and bread.",
+      status: "completed",
+      priority: { level: "medium" },
+      created_at: "2024-10-01T10:30:00Z",
+      due_date: null,
+      tags: ["groceries", "shopping"]
+    }
+  ]);
+
+  const [showPlan, setShowPlan] = useState(false); // State to control when to show the plan
 
   // Function to handle the "Plan My Day" button click
   const planMyDay = () => {
@@ -25,15 +48,15 @@ export default function App() {
           {/* DayPlanner on the left */}
           <View style={styles.leftColumn}>
             <DayPlanner
-              tasks={[...workTasks, ...personalTasks]}
+              tasks={tasks} // Pass the tasks to the DayPlanner
               showPlan={showPlan} // Pass the showPlan state to DayPlanner
             />
           </View>
           {/* To-Do list on the right */}
           <View style={styles.rightColumn}>
             <TaskCategories
-              setWorkTasks={setWorkTasks}
-              setPersonalTasks={setPersonalTasks}
+              tasks={tasks} // Pass the tasks to TaskCategories
+              setTasks={setTasks} // Pass the setTasks function to allow task updates
             />
             {/* "Plan My Day" Button */}
             <Button title="Plan My Day" onPress={planMyDay} />

@@ -1,67 +1,63 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 
-const DayPlanner = ({ tasks }) => {
-  // State to store the fetched time blocks
+const DayPlanner = ({ tasks, showPlan }) => {
   const [timeBlocks, setTimeBlocks] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  // Placeholder time block data
-  const placeholderTimeBlocks = [
-    { time_slot: "09:00", task_title: "Placeholder Task 1", duration: 1 },
-    { time_slot: "10:30", task_title: "Placeholder Task 2", duration: 1.5 },
-    { time_slot: "14:00", task_title: "Placeholder Task 3", duration: 2 },
-  ];
-
-  // Function to fetch time blocks from the backend
+  // Function to fetch time blocks from the backend (only triggered when "Plan My Day" is clicked)
   const fetchTimeBlocks = async () => {
     try {
-      const taskData = JSON.stringify({ tasks });
+      setLoading(true); // Show loading when fetching starts
+      const taskData = JSON.stringify({
+        user: {
+          user_id: "user_id_123",
+          preference_type: "⚡ Quick Wins"
+        },
+        tasks_json_structure: { tasks }
+      });
+
       const response = await fetch('https://your-backend-url/api/assign-time-blocks', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: taskData,
+        body: taskData
       });
+
       if (!response.ok) throw new Error("Failed to fetch data");
       const data = await response.json();
-      setTimeBlocks(data.time_blocks);
+      setTimeBlocks(data.time_blocks_json_structure.time_blocks);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching time blocks:', error);
-      setError(true); // Set error state
-      setTimeBlocks(placeholderTimeBlocks); // Use placeholder data
+      setError(true);
       setLoading(false);
     }
   };
 
+  // Fetch the time blocks only when the showPlan prop becomes true
   useEffect(() => {
-    fetchTimeBlocks();
-  }, [tasks]); // Refetch time blocks when tasks change
+    if (showPlan) {
+      fetchTimeBlocks(); // Only fetch time blocks when "Plan My Day" is clicked
+    }
+  }, [showPlan]);
 
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
-  // Define the available time slots (whole day)
-  const timeSlots = Array.from({ length: 24 }, (_, i) => {
-    const hour = i.toString().padStart(2, '0');
-    return `${hour}:00`;
-  });
-
-  // Convert time (e.g., "09:00") to number of minutes since midnight
+  // Convert time to minutes since midnight
   const timeToMinutes = (time) => {
-    const [hour, minute] = time.split(':').map(Number);
-    return hour * 60 + minute;
+    const date = new Date(time);
+    return date.getHours() * 60 + date.getMinutes();
   };
 
-  // Render the task blocks based on time slots and durations
   const renderTaskBlocks = () => {
     return timeBlocks.map((block, index) => {
       const startMinutes = timeToMinutes(block.time_slot);
-      const height = block.duration * 60; // 1 hour = 60px height
+      const height = block.duration; // Duration is already in minutes
 
       return (
         <View
@@ -70,7 +66,7 @@ const DayPlanner = ({ tasks }) => {
             styles.taskBlock,
             {
               top: startMinutes, // Position the block based on the start time
-              height: height, // Set height based on task duration
+              height: height, // Set height based on task duration (in minutes)
             },
           ]}
         >
@@ -82,20 +78,16 @@ const DayPlanner = ({ tasks }) => {
 
   return (
     <View style={styles.container}>
-      {error && (
-        <Text style={styles.errorMessage}>
-          Failed to fetch time blocks from backend. Displaying placeholder data.
-        </Text>
-      )}
+      {error && <Text style={styles.errorMessage}>Error fetching time blocks.</Text>}
       <ScrollView contentContainerStyle={styles.calendar} showsVerticalScrollIndicator={true}>
         {/* Render the time slots */}
-        {timeSlots.map((time, index) => (
+        {Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`).map((time, index) => (
           <View key={index} style={styles.timeSlot}>
             <Text style={styles.timeText}>{time}</Text>
           </View>
         ))}
-        {/* Render the task blocks */}
-        {renderTaskBlocks()}
+        {/* Render task blocks only when showPlan is true and timeBlocks are available */}
+        {showPlan && timeBlocks && renderTaskBlocks()}
       </ScrollView>
     </View>
   );
@@ -105,7 +97,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 10,
     position: 'relative',
-    height: '100%', // Make sure the height of the container fills the screen
+    height: '100%',
   },
   calendar: {
     position: 'relative',
@@ -120,14 +112,14 @@ const styles = StyleSheet.create({
   },
   timeText: {
     position: 'absolute',
-    left: 0, // Position the time labels on the left of the screen
+    left: 0,
     fontSize: 16,
     color: '#777',
-    width: 50, // Ensure there's enough room for the time labels
+    width: 50,
   },
   taskBlock: {
     position: 'absolute',
-    left: 60, // Position the task block to the right of the time labels
+    left: 60,
     width: '80%',
     backgroundColor: '#ffbf47',
     borderRadius: 5,

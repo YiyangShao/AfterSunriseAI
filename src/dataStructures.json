@@ -1,4 +1,8 @@
 {
+  "user": {
+    "user_id": "user_id_123",
+    "preference_type": "Quick Wins"
+  },
   "tasks_json_structure": {
     "tasks": [
       {
@@ -6,32 +10,46 @@
         "category": "work",
         "title": "Prepare report",
         "description": "Complete the monthly sales report.",
-        "completed": false,
-        "priority": "high"
+        "status": "pending",
+        "priority": {
+          "level": "high"
+        },
+        "created_at": "2024-10-02T09:00:00Z",
+        "due_date": "2024-10-10T17:00:00Z",
+        "tags": ["report", "finance"]
       },
       {
         "id": "2",
         "category": "personal",
         "title": "Buy groceries",
         "description": "Buy milk, eggs, and bread.",
-        "completed": true,
-        "priority": "medium"
+        "status": "completed",
+        "priority": {
+          "level": "medium"
+        },
+        "created_at": "2024-10-01T10:30:00Z",
+        "due_date": null,
+        "tags": ["groceries", "shopping"]
       }
     ]
   },
   "time_blocks_json_structure": {
     "time_blocks": [
       {
-        "time_slot": "09:00",
+        "time_slot": "2024-10-02T09:00:00Z",
+        "end_time": "2024-10-02T11:00:00Z",
         "task_id": "1",
         "task_title": "Prepare report",
-        "duration": 2
+        "duration": 120,
+        "owner": "user_id_123"
       },
       {
-        "time_slot": "14:00",
+        "time_slot": "2024-10-02T14:00:00Z",
+        "end_time": "2024-10-02T15:00:00Z",
         "task_id": "2",
         "task_title": "Buy groceries",
-        "duration": 1
+        "duration": 60,
+        "owner": "user_id_456"
       }
     ]
   }

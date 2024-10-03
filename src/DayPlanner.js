@@ -1,22 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 
+// Fake data for time blocks, mimicking the structure in dataStructures.json
+const fakeTimeBlocks = [
+  {
+    time_slot: "2024-10-02T09:00:00Z",
+    end_time: "2024-10-02T11:00:00Z",
+    task_id: "1",
+    task_title: "Prepare report",
+    duration: 120
+  },
+  {
+    time_slot: "2024-10-02T14:00:00Z",
+    end_time: "2024-10-02T15:00:00Z",
+    task_id: "2",
+    task_title: "Buy groceries",
+    duration: 60
+  }
+];
+
 const DayPlanner = ({ tasks, showPlan }) => {
   const [timeBlocks, setTimeBlocks] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  // Function to fetch time blocks from the backend (only triggered when "Plan My Day" is clicked)
+  // Function to fetch time blocks from the backend (or use fake data if backend fails)
   const fetchTimeBlocks = async () => {
     try {
-      setLoading(true); // Show loading when fetching starts
+      setLoading(true); // Show loading indicator
       const taskData = JSON.stringify({
         user: {
           user_id: "user_id_123",
-          preference_type: "⚡ Quick Wins"
+          preference_type: "Quick Wins"
         },
         tasks_json_structure: { tasks }
       });
+      
 
       const response = await fetch('https://your-backend-url/api/assign-time-blocks', {
         method: 'POST',
@@ -33,6 +52,7 @@ const DayPlanner = ({ tasks, showPlan }) => {
     } catch (error) {
       console.error('Error fetching time blocks:', error);
       setError(true);
+      setTimeBlocks(fakeTimeBlocks); // Use fake data in case of an error
       setLoading(false);
     }
   };
@@ -40,7 +60,7 @@ const DayPlanner = ({ tasks, showPlan }) => {
   // Fetch the time blocks only when the showPlan prop becomes true
   useEffect(() => {
     if (showPlan) {
-      fetchTimeBlocks(); // Only fetch time blocks when "Plan My Day" is clicked
+      fetchTimeBlocks(); // Fetch time blocks when "Plan My Day" is clicked
     }
   }, [showPlan]);
 
@@ -48,7 +68,7 @@ const DayPlanner = ({ tasks, showPlan }) => {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
-  // Convert time to minutes since midnight
+  // Convert time to minutes since midnight (adjusted for local time)
   const timeToMinutes = (time) => {
     const date = new Date(time);
     return date.getHours() * 60 + date.getMinutes();
@@ -65,7 +85,7 @@ const DayPlanner = ({ tasks, showPlan }) => {
           style={[
             styles.taskBlock,
             {
-              top: startMinutes, // Position the block based on the start time
+              top: startMinutes + 240, // Position the block based on the start time
               height: height, // Set height based on task duration (in minutes)
             },
           ]}
@@ -78,7 +98,7 @@ const DayPlanner = ({ tasks, showPlan }) => {
 
   return (
     <View style={styles.container}>
-      {error && <Text style={styles.errorMessage}>Error fetching time blocks.</Text>}
+      {error && <Text style={styles.errorMessage}>Error fetching time blocks. Displaying fake data.</Text>}
       <ScrollView contentContainerStyle={styles.calendar} showsVerticalScrollIndicator={true}>
         {/* Render the time slots */}
         {Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`).map((time, index) => (
